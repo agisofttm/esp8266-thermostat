@@ -4,41 +4,29 @@ Temperature::Temperature() {
 }
 
 void Temperature::setup() {
-  dht = new DHT_Unified(DHTPIN, DHTTYPE);
-  dht->begin();
-
-  
 
 
-  sensor_t sensor;
-  dht->temperature().getSensor(&sensor);
-  Serial.println("------------------------------------");
-  Serial.println("Temperature");
-  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
-  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
-  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
-  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" *C");
-  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" *C");
-  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" *C");
-  Serial.println("------------------------------------");
-  // Print humidity sensor details.
-  dht->humidity().getSensor(&sensor);
-  Serial.println("------------------------------------");
-  Serial.println("Humidity");
-  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
-  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
-  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
-  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println("%");
-  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println("%");
-  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println("%");
-  Serial.println("------------------------------------");
+#ifdef DHT_SENSOR
+  sensor = new DHT_Unified(TEMPERATURE_PIN, DHTTYPE);
+#endif
 
+#ifdef DALLAS_SENSOR
+  oneWire = new OneWire(TEMPERATURE_PIN);
+  sensor = new DallasTemperature(oneWire);
+#endif
+
+  sensor->begin();
   float newReading = readFromSensor();
 
   total = newReading * NUM_READINGS;
-  for (int i=0; i < NUM_READINGS; i++) {
+  for (int i = 0; i < NUM_READINGS; i++) {
     readings[i] = newReading;
   }
+
+#ifdef DALLAS_SENSOR
+  // activate async mode
+  sensor->setWaitForConversion(false);
+#endif
 }
 
 float Temperature::get() {
@@ -68,8 +56,10 @@ void Temperature::performReading() {
 
 float Temperature::readFromSensor() {
 
+
+#ifdef DHT_SENSOR
   sensors_event_t event;
-  dht->temperature().getEvent(&event);
+  sensor->temperature().getEvent(&event);
   if (isnan(event.temperature)) {
     Serial.println("Error reading temperature!");
     return ERROR_READING;
@@ -78,18 +68,26 @@ float Temperature::readFromSensor() {
     Serial.print("Temperature: ");
     Serial.print(event.temperature);
     Serial.println(" *C");
+
     return event.temperature;
   }
-  // Get humidity event and print its value.
-  dht->humidity().getEvent(&event);
-  if (isnan(event.relative_humidity)) {
-    Serial.println("Error reading humidity!");
-  }
-  else {
-    Serial.print("Humidity: ");
-    Serial.print(event.relative_humidity);
-    Serial.println("%");
-  }
 
+#endif
 
+#ifdef DALLAS_SENSOR
+
+  // After we got the temperatures, we can print them here.
+  // We use the function ByIndex, and as an example get the temperature from the first sensor only.
+
+  float temperature = sensor->getTempCByIndex(0);
+  if (temperature < -126) {
+    Serial.println("Error reading temperature!");
+    return ERROR_READING;
+  }
+  //Serial.print("Temperature: ");
+  //Serial.println(temperature);
+
+    sensor->requestTemperatures(); // Send the command to get temperature for next time
+  return temperature;
+#endif
 }

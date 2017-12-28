@@ -2,8 +2,8 @@
 #define relay_h
 
 #include "Arduino.h"
+#include "config.h"
 
-#define RELAY_PIN D5
 class Relay {
 
     public:

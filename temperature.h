@@ -1,18 +1,22 @@
 #ifndef temperature_h
 #define temperature_h
 
+#include "Arduino.h"
+#include "config.h"
 
+#define ERROR_READING -99
+
+#ifdef DHT_SENSOR
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
-
-#include "Arduino.h"
-
-#define DHTPIN   D7
 #define DHTTYPE  DHT11
+#endif
 
-#define NUM_READINGS 20
-#define ERROR_READING -1234
+#ifdef DALLAS_SENSOR
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#endif
 
 
 class Temperature {
@@ -29,10 +33,14 @@ class Temperature {
         
         float readings[NUM_READINGS];
         int readingsIndex = 0;
-        float total;
-        DHT_Unified* dht;
-        
-
+        float total;  
+#ifdef DHT_SENSOR
+        DHT_Unified* sensor;
+#endif
+#ifdef DALLAS_SENSOR
+        OneWire* oneWire;
+        DallasTemperature* sensor;
+#endif
 };
 
 #endif

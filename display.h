@@ -1,17 +1,8 @@
 #ifndef Display_h
 #define Display_h
 #include "SSD1306.h"
-//#include "SSD1306Ui.h"
+#include "config.h"
 #include "fonts.h"
-//#include <SSD1306.h>
-//#include <SSD1306Fonts.h>
-//#include <SSD1306Ui.h>
-//#include <Wire.h>
-
-
-#define OLED_SDA    D3
-#define OLED_SDC    D4
-#define OLED_ADDR   0x3C
 
 #include "Arduino.h"
 
@@ -24,8 +15,10 @@ class Display {
         void draw(String command);
         void showSplashScreen();
         void showWifiSetupView(String ssid, String password);
-        void showHomeView(float currentTemperature, bool flame);
-        void showAdjustView(float targetTemperature, bool flame);
+        void showHomeView(float currentTemperature, bool flame, InternetMode wifi, int boostMins);
+        void showAdjustView(float targetTemperature, bool flame, InternetMode wifi);
+        void showAdjustBoostView(int boostMins);
+        void showMQTTConnectView();
         void markDirty();
         
 
@@ -33,8 +26,12 @@ class Display {
         SSD1306 * d;
         void drawTitle(String title, bool inverted);
         void drawBigTemperature(float temperature);
+        void drawBigBoost(int boostMins);
         void drawFlameIndicator();
-        void drawWifiIndicator();
+        void drawBoostIndicator();
+        void drawBoostMins(int mins);
+        void drawInternetIndicator(InternetMode internet);
+
         bool dirty = false;
 
 

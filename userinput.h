@@ -2,12 +2,8 @@
 #define userinput_h
 
 #include "Arduino.h"
+#include "config.h"
 
-#define ENCODER_CLK        D1      // This pin must have a minimum 0.47 uF capacitor
-                                    // The current library only allows pins 2 or 3
-#define ENCODER_DT         D2     // data pin
-#define ENCODER_SW         D6      // switch pin (active LOW)
-#define MAX_ROTARIES        1      // this example define two rotaries for this encoder
 
 class UserInput {
 
@@ -16,13 +12,17 @@ class UserInput {
         void setup();
         void increaseRotary();
         void decreaseRotary();
+        void pollButton( void (*pressCallback)(), void (*holdCallback)());
         int getRotary();
 
     private:
     static void rotaryInterrupt();
     static volatile int rotaryPosition;
-
-       
+    int buttonVal = 0;
+    int lastButtonVal = 0;
+    long btnDnTime; // time the button was pressed down
+    long btnUpTime; // time the button was released
+    bool emittedHold = false;
         
 };
 

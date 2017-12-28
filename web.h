@@ -14,30 +14,46 @@
 
 #include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
 
-#define SETUP_SSID "setup_thermostat"
-#define SETUP_PASSWORD "iamcold"
+#include <PubSubClient.h>
+#include "config.h"
+
+
 
 void wifiConfigCallback(WiFiManager * wfm);
 void wifiSaveConfigCallback();
+void pubSubCallbackStatic(char* topic, byte* payload, unsigned int length);
 
 class Web {
 
   public:
     Web(Display * _display);
-    void setup();
+    InternetMode setup();
+    void update(float temperature);
+    void loop();
     void setSaveConfig();
+    void pubSubCallback(char* topic, byte* payload, unsigned int length);
+    int getBoostCounter();
+    void enterForcedConfigMode();
 
 
   private:
-    void configureWifi();
+    InternetMode configureWifi();
+    void loadConfig();
+    void reconnect(); 
     
     WiFiManager * wiFiManager;
+    WiFiClient * wiFiClient;
+    PubSubClient* pubSubClient;
 
     //define your default values here, if there are different values in config.json, they are overwritten.
     char mqtt_server[40];
     char mqtt_port[6];// = "8080";
-    char blynk_token[34];// = "YOUR_BLYNK_TOKEN";
+    char mqtt_username[32];
+    char mqtt_password[32];
     bool shouldSaveConfig = false;
+    int boostCounter = 0;
+
+    unsigned long lastReconnect = 1000000; // make it huge!
 
     Display * display;
 

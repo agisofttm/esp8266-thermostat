@@ -2,6 +2,7 @@
 #define SerialControl_h
 
 #include "Arduino.h"
+#include "config.h"
 
 class SerialControl {
 
